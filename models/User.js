@@ -2,6 +2,8 @@
 const { Sequelize, DataTypes } = require('sequelize');
 const sequelize = require('../config/db.connect'); // Make sure this path is correct
 
+
+
 const User = sequelize.define('User', {
     username: {
         type: DataTypes.STRING,

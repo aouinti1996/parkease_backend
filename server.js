@@ -4,17 +4,18 @@ const cors = require('cors');
 const bodyParser = require('body-parser'); // Added this missing import
 const routes = require('./routes/routes'); // Import your routes
 
-const app = express();
-const PORT = 5000;
-
 require('./models/Reservation') ;
 require('./models/User') ;
 require('./models/ParkingSpot') ;
 require('./models/ParkingLot') ;
-app.use(cors());
-app.use(bodyParser.json());
 
-app.use('/api', routes); // Set up routes
+const app = express();
+const PORT = 3000;
+
+app.use(cors());
+
+
+app.use('/', routes); // Set up routes
 
 sequelize.authenticate()
     .then(() => {
