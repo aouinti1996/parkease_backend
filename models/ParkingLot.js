@@ -1,64 +1,87 @@
-// models/ParkingLot.js
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db.connect');
 
+const ParkingLot = sequelize.define('ParkingLot', {
+    name: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+    hourlyRate: {
+        type: DataTypes.FLOAT,
+        allowNull: false,
+    },
+    available: {
+        type: DataTypes.INTEGER, // Added available field
+        allowNull: false,
+    },
+    total: {
+        type: DataTypes.INTEGER, // Added total field
+        allowNull: false,
+    },
+    address: {
+        type: DataTypes.STRING,
+        allowNull: false,
+    },
+}, {
+    timestamps: true,
+});
 
-    const ParkingLot = sequelize.define('ParkingLot', {
-        name: {
-            type: DataTypes.STRING,
-            allowNull: false,
-        },
-        address: {
-            type: DataTypes.STRING,
-            allowNull: false,
-        },
-        hourlyRate: {
-            type: DataTypes.FLOAT,
-            allowNull: false,
-            validate: {
-                min: 0, // Ensures hourly rate is not negative
-            },
-        },
-    }, {
-        timestamps: true, // Automatically adds createdAt and updatedAt
-    });
-ParkingLot.associate = (models) => {
-    ParkingLot.hasMany(models.ParkingSpot, { foreignKey: 'lotsId' });
-};
-    module.exports = ParkingLot;
-  /*  json
+module.exports = ParkingLot;
+
+/*
 {
-    "name": "Parking Tunis Centre",
-    "address": "Avenue Habib Bourguiba, Tunis",
-    "hourlyRate": 2.0,
-    "createdAt": "2025-01-24T10:00:00Z",
-    "updatedAt": "2025-01-24T10:00:00Z"
-},
-{
-    "name": "Parking La Marsa",
-    "address": "Rue de La Corniche, La Marsa",
-    "hourlyRate": 1.5,
-    "createdAt": "2025-01-24T10:00:00Z",
-    "updatedAt": "2025-01-24T10:00:00Z"
-},
-{
-    "name": "Parking Ariana City",
-    "address": "Avenue de l'Indépendance, Ariana",
-    "hourlyRate": 2.0,
-    "createdAt": "2025-01-24T10:00:00Z",
-    "updatedAt": "2025-01-24T10:00:00Z"
-},
-{
-    "name": "Parking Lac 1",
-    "address": "Rue du Lac, Les Berges du Lac",
+    "name": "Parking Lot Tunis Centre",
     "hourlyRate": 2.5,
-    "createdAt": "2025-01-24T10:00:00Z",
-    "updatedAt": "2025-01-24T10:00:00Z"
+    "available": 20,
+    "total": 50,
+    "address": "Avenue Habib Bourguiba, Tunis"
 },
 {
-    "name": "Parking Lac 2",
-    "address": "Rue du Lac 2, Les Berges du Lac",
+    "name": "Parking Lot Sfax Port",
+    "hourlyRate": 1.8,
+    "available": 15,
+    "total": 40,
+    "address": "Port de Sfax, Sfax"
+},
+{
+    "name": "Parking Lot La Marsa",
     "hourlyRate": 3.0,
-    "createdAt": "2025-01-24T10:00:00Z",
-    "updatedAt": "2025-01-24T10:00:00Z"
+    "available": 30,
+    "total": 60,
+    "address": "La Marsa Beach, Tunis"
+},
+{
+    "name": "Parking Lot Carthage",
+    "hourlyRate": 2.2,
+    "available": 10,
+    "total": 25,
+    "address": "Carthage, Tunis"
+},
+{
+    "name": "Parking Lot Ariana Mall",
+    "hourlyRate": 2.0,
+    "available": 50,
+    "total": 100,
+    "address": "Ariana Mall, Ariana"
+},
+{
+    "name": "Parking Lot Sousse Marina",
+    "hourlyRate": 1.5,
+    "available": 40,
+    "total": 80,
+    "address": "Sousse Marina, Sousse"
+},
+{
+    "name": "Parking Lot Monastir Airport",
+    "hourlyRate": 2.8,
+    "available": 15,
+    "total": 35,
+    "address": "Monastir Habib Bourguiba International Airport, Monastir"
+},
+{
+    "name": "Parking Lot Hammamet Beach",
+    "hourlyRate": 3.5,
+    "available": 25,
+    "total": 55,
+    "address": "Hammamet Beach, Hammamet"
 }*/

@@ -9,9 +9,14 @@ require('./models/User') ;
 require('./models/ParkingSpot') ;
 require('./models/ParkingLot') ;
 
+
 const app = express();
+
+
 const PORT = 3000;
 
+app.use(express.json()); // Parses incoming requests with JSON payloads
+app.use(express.urlencoded({ extended: true })); // Parses URL-encoded bodies
 app.use(cors());
 
 

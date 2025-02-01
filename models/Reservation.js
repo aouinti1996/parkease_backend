@@ -1,7 +1,5 @@
 const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db.connect');
-const ParkingSpot = require('../models/ParkingSpot');
-const User = require('../models/User');
 
 const Reservation = sequelize.define('Reservation', {
     startTime: {
@@ -16,23 +14,30 @@ const Reservation = sequelize.define('Reservation', {
         type: DataTypes.FLOAT,
         allowNull: false,
     },
-
     userId: {
         type: DataTypes.INTEGER,
         allowNull: false,
+        references: {
+            model: 'Users',
+            key: 'id',
+        },
     },
     parkingSpotId: {
         type: DataTypes.INTEGER,
         allowNull: false,
+        references: {
+            model: 'ParkingSpots',
+            key: 'id',
+        },
     },
 }, {
     timestamps: true, // Automatically adds createdAt and updatedAt
 });
 
-// Define associations inside the associate function
+// Define associations
 Reservation.associate = (models) => {
-    Reservation.belongsTo(models.User, { foreignKey: 'userId' }); // References 'User' table
-    Reservation.belongsTo(models.ParkingSpot, { foreignKey: 'parkingSpotId' }); // References 'ParkingSpot' table
+    Reservation.belongsTo(models.User, { foreignKey: 'userId', as: 'user' });
+    Reservation.belongsTo(models.ParkingSpot, { foreignKey: 'parkingSpotId', as: 'parkingSpot' });
 };
 
 module.exports = Reservation;

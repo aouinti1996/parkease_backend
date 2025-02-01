@@ -1,5 +1,5 @@
 // models/User.js
-const { Sequelize, DataTypes } = require('sequelize');
+const { DataTypes } = require('sequelize');
 const sequelize = require('../config/db.connect'); // Make sure this path is correct
 
 
@@ -24,6 +24,11 @@ const User = sequelize.define('User', {
     // Model options
     timestamps: true, // To add createdAt and updatedAt automatically
 });
-
+User.associate = (models) => {
+    User.hasMany(models.Reservation, {
+        foreignKey: 'userId',
+        as: 'reservations',
+    });
+};
 // Export model
 module.exports = User;

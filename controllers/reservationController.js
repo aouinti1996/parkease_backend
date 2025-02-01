@@ -1,59 +1,150 @@
-// controllers/parkingController.js
-const ParkingSpot = require('../models/ParkingSpot');
-const Reservation = require('../models/Reservation');
-const ParkingLot = require('../models/ParkingLot');
-const { calculateCost } = require('../utils/costCalculator');
 
-exports.reservation = async (req, res) => {
+
+
+const { User, ParkingSpot, ParkingLot, Reservation } = require('../models'); // Ensure to import all models
+
+exports.reserveSpot = async (req, res) => {
     try {
-        const startTime = "2025-01-25T10:00:00Z";
-        const endTime = "2025-01-25T10:01:00Z";
-        const userId = 1;
-        const parkingSpotId = 1;
+        const { parkingSpotId, startTime, endTime, userId } = req.body;
 
+        // Validate request body
         if (!parkingSpotId || !startTime || !endTime || !userId) {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
+        const start = new Date(startTime);
+        const end = new Date(endTime);
 
+        if (isNaN(start) || isNaN(end) || start >= end) {
+            return res.status(400).json({ error: 'Invalid start or end time' });
+        }
 
+        // Check if user exists and fetch user details
+        const user = await User.findByPk(userId, {
+            attributes: ['username', 'plate'], // Fetch only the name and plate fields
+        });
 
-        // Include associated ParkingLot using the correct alias
-        const spot = await ParkingSpot.findByPk(parkingSpotId, {
+        if (!user) {
+            return res.status(404).json({ error: 'User not found' });
+        }
+
+        // Find the parking spot with its associated parking lot
+        const parkingSpot = await ParkingSpot.findOne({
+            where: { id: parkingSpotId },
             include: {
                 model: ParkingLot,
-                as: 'parkingLot', // Use the correct alias defined in the association
-                attributes: ['hourlyRate'],
+                as: 'parkingLot',
             },
         });
 
-        if (!spot) {
+        if (!parkingSpot) {
             return res.status(404).json({ error: 'Parking spot not found' });
         }
 
-        if (!spot.isAvailable) {
+        if (!parkingSpot.isAvailable) {
             return res.status(400).json({ error: 'Parking spot is already reserved' });
         }
 
-        const totalCost = calculateCost(startTime, endTime, spot.parkingLot.hourlyRate);
+        // Calculate cost (duration in hours * hourly rate)
+        const durationHours = (end - start) / (1000 * 60 * 60); // Convert ms to hours
+        const totalCost = durationHours * parkingSpot.parkingLot.hourlyRate;
 
-
+        // Create reservation
         const reservation = await Reservation.create({
             parkingSpotId,
             startTime,
             endTime,
             userId,
-            totalCost,
+            totalCost
         });
 
-        await spot.update({ isAvailable: false });
+        // Mark the spot as unavailable
+        await parkingSpot.update({ isAvailable: false });
 
-        res.status(201).json({
-            message: 'Reservation successful',
-            reservation,
-        });
+        // Prepare the response with the required details
+        const response = {
+            message: 'Reservation created successfully',
+            reservationDetails: {
+                parkingLotName: parkingSpot.parkingLot.name, // Parking lot name
+                spotNumber: parkingSpot.id, // Spot number (or use parkingSpot.number if available)
+                startTime: start.toISOString(), // Start time in ISO format
+                endTime: end.toISOString(), // End time in ISO format
+                totalCost: totalCost.toFixed(2), // Total cost formatted to 2 decimal places
+                userName: user.username, // User's name
+                userPlate: user.plate, // User's license plate number
+            },
+            reservation // Include the full reservation object if needed
+        };
+
+        res.status(201).json(response);
+
     } catch (err) {
-        console.error('Error reserving spot:', err);
+        console.error(err);
         res.status(500).json({ error: 'Error reserving spot', details: err.message });
+    }
+};
+
+exports.getUserReservations = async (req, res) => {
+    try {
+        const { userId } = req.params;
+
+        const reservations = await Reservation.findAll({
+            where: { userId },
+            include: [{ model: ParkingSpot, as: 'parkingSpot' }]
+        });
+
+        res.status(200).json(reservations);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error fetching user reservations', details: err.message });
+    }
+};
+
+
+exports.getReservationById = async (req, res) => {
+    try {
+        const { reservationId } = req.params;
+
+        if (!reservationId) {
+            return res.status(400).json({ error: 'Reservation ID is required' });
+        }
+
+        const reservation = await Reservation.findByPk(reservationId, {
+            include: [
+                {
+                    model: ParkingSpot,
+                    as: 'parkingSpot',
+                    include: {
+                        model: ParkingLot,
+                        as: 'parkingLot'
+                    }
+                },
+                {
+                    model: User,
+                    as: 'user',
+                    attributes: ['username', 'plate']
+                }
+            ]
+        });
+
+        if (!reservation) {
+            return res.status(404).json({ error: 'Reservation not found' });
+        }
+
+        const response = {
+            reservationId: reservation.id,
+            parkingLotName: reservation.parkingSpot.parkingLot.name,
+            spotNumber: reservation.parkingSpot.id,
+            startTime: reservation.startTime,
+            endTime: reservation.endTime,
+            totalCost: reservation.totalCost.toFixed(2),
+            userName: reservation.user.username,
+            userPlate: reservation.user.plate
+        };
+
+        res.status(200).json(response);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: 'Error fetching reservation', details: err.message });
     }
 };

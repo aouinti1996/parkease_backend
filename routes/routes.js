@@ -17,15 +17,19 @@ router.post('/login', authController.login);
 
 // Parking Lots
 router.get('/parking-lots', parkingLotController.getParkingLots);
+router.get('/parking-lots/:id', parkingLotController.getParkingLotById);
 router.post('/add/parking-lots', parkingLotController.addParkingLots);
 
 // Route to reserve a parking spot
 router.get('/parking-spots', parkingSpotController.getAllParkingSpots);
 router.post('/reserve/parking-spot', parkingSpotController.addParkingSpot);
+
+
 // Route to reservation
-router.post('/reservation', reservationController.reservation);
-// Route to get reservation by ID
-//router.get('/reservation/:id', getReservationById);
+router.post('/reserve', reservationController.reserveSpot);
+router.get('/reservations/:reservationId',reservationController.getReservationById)
+router.get('/user/:userId', reservationController.getUserReservations);
+
 
 module.exports = router;
 

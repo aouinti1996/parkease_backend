@@ -1,19 +1,16 @@
+const ParkingSpot = require('../models/ParkingSpot');
+const ParkingLot = require('../models/ParkingLot');
 
-const ParkingSpot= require('../models/ParkingSpot');
-const ParkingLot= require('../models/ParkingLot');
-
-
-const getAllParkingSpots = async (req, res) => {
+exports.getAllParkingSpots = async (req, res) => {
     try {
-        const spots = await ParkingSpot.findAll(); // Use ParkingLot.findAll() instead of ParkingLotController.findAll()
+        const spots = await ParkingSpot.findAll();
         res.json(spots);
     } catch (err) {
-        res.status(500).json({ error: 'Error fetching parking lots.' });
+        res.status(500).json({ error: 'Error fetching parking spots.' });
     }
 };
 
-// Add a new ParkingSpot
-const addParkingSpot = async (req, res) => {
+exports.addParkingSpot = async (req, res) => {
     const { lotId, number, isAvailable } = req.body;
 
     try {
@@ -23,6 +20,11 @@ const addParkingSpot = async (req, res) => {
             return res.status(404).json({ message: 'ParkingLot not found' });
         }
 
+        // Validate required fields
+        if (!lotId || !number || isAvailable === undefined ) {
+            return res.status(400).json({ message: 'All fields are required.' });
+        }
+
         // Create a new ParkingSpot
         const parkingSpot = await ParkingSpot.create({
             lotId,
@@ -30,13 +32,9 @@ const addParkingSpot = async (req, res) => {
             isAvailable
         });
 
-        // Return the newly created ParkingSpot
-        return res.status(201).json(parkingSpot);
+        res.status(201).json(parkingSpot);
     } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: 'Error adding ParkingSpot', error });
+        res.status(500).json({ message: 'Error adding ParkingSpot', error });
     }
 };
-
-module.exports = { addParkingSpot ,getAllParkingSpots};
-
